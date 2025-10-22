@@ -74,7 +74,7 @@ Download this repository and add it to the Arduino libraries available in your .
 # Circuit Diagram 
 
 
-<img src="./doc/pictures/US_ToF_EVK_wiring.jpg" alt="Ultrasonic ToF EVK wiring" width="500"/>
+<img src="./doc/pictures/intPinLevelShifter.png" alt="Ultrasonic ToF EVK wiring" width="500"/>
 
 
 
