@@ -4,7 +4,7 @@ This Arduino library for the [TDK/Invensense CHx01 Time-of-Flight sensors](https
 The CHx01 devices are miniature, ultra-low power, long-range ultrasonic Time-of-Flight (ToF) range sensors.
 This library supports CH101 and CH201 devices.
 
-This library operates correctly when the hardware circuit is implemented according to the specifications provided in the manufacturer's datasheet. The circuit configuration used in this implementation is documented in the accompanying figures (see Circuit Diagrams section).\
+This library operates correctly when the hardware circuit is implemented according to the specifications provided in the manufacturer's datasheet. The circuit configuration used in this implementation is documented in the accompanying figures (see Circuit Diagrams section).
 
 # Updates compared to the main library
 This section provides a summary of the modifications made to the main library.
@@ -22,18 +22,27 @@ Within the CHx01_dev(void) constructor, the following preprocessor conditional h
 ```
 Steps to add a new microcontroller and Serial output:
 1- Identify the preprocessor definition for your target microcontroller
+
 2- Determine the appropriate serial port instance (e.g., Serial, Serial1, Serial2, etc.)
+
 3- Add the platform condition to the preprocessor block in both constructors
+
 4- Recompile the library for your target platform
+
 
 **Set the direction of the INT pin level shifter**
 The sensor datasheet explicitly requires a bidirectional level shifter for the INT pin. This hardware component is essential because the INT pin operates in two distinct modes:
+
 1- Initialization Mode: The microcontroller drives the INT pin (OUTPUT direction)
+
 2- Application Mode: The sensor drives the INT pin to send interrupt signals (INPUT direction)
+
 The SN74LVC2T45 is the bidirectional level shifter that I have used in the test system. It provides the necessary direction control for proper INT pin operation.
 
 DIR Pin State Data Flow Direction Mode:
+
 LOW (0) Microcontroller → Sensor Initialization (MCU controls INT)
+
 HIGH (1) Sensor → Microcontroller Application (Sensor sends interrupts)
 
 To ensure correct bidirectional operation, the following direction definitions have been implemented in CHx01_dev.h:
