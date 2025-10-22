@@ -1,4 +1,3 @@
-
 #ifndef CHx01_DEV_H
 #define CHx01_DEV_H
 
@@ -12,8 +11,8 @@
 #define UNUSED_PIN (0xFF)
 #define DEFAULT_I2C_CLOCK 400000
 
-#define CHX01_INT_DIR_OUT (1)
-#define CHX01_INT_DIR_IN  (0)
+#define CHX01_INT_DIR_OUT (0)
+#define CHX01_INT_DIR_IN  (1)
 
 typedef void (chx01_dev_irq_handler)(void);
 
@@ -23,6 +22,7 @@ public:
    * @brief Class constructor for an undefined chirp object.
    */
   CHx01_dev(void);
+  
   /*!
    * @brief Class constructor for a chirp device object.
    * @param i2c_ref Reference of the Wire to be used
@@ -32,6 +32,7 @@ public:
    * @param prog_id ID of the interrupt prog pin
    */
   CHx01_dev(TwoWire &i2c_ref, uint8_t i2c_addr, int int1_id, int int_dir_id, int prog_id);
+  
   /*!
    * @brief Configure the sensor
    * @param group Sensor group the sensor belongs (CHx01 object pointer)
@@ -188,6 +189,7 @@ public:
    * @brief Reset sensor i2c.
    */
    void i2c_reset(void);
+   
 protected:
   TwoWire* i2c;
   uint8_t i2c_address;
@@ -198,8 +200,9 @@ protected:
   ch_fw_init_func_t fw_init_func;
   bool int1_attached;
   bool is_measure_ready;
+  HardwareSerial* outputSerial;
+  
   void clear_data_ready(void);
-
 };
 
 #endif // CHx01_DEV_H
