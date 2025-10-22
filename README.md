@@ -56,6 +56,14 @@ To ensure correct bidirectional operation, the following direction definitions h
 #define CHX01_INT_DIR_IN  (1)
 ```
 
+**Increase the number of I/Q samples**
+
+The maximum number of I/Q samples for CH101 and CH201 is 225 and 450, respectively. Increase them in ch_common.c to achieve more reliable output. 
+
+```C++
+#define CH_IQ_SAMPLES_PER_READ 225//450//64   
+```
+
 **Added example**
 
 I have added an example to the example folder. The example uses an STM32F407 to communicate with a CH101. 
