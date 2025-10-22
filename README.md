@@ -7,9 +7,11 @@ This library supports CH101 and CH201 devices.
 This library operates correctly when the hardware circuit is implemented according to the specifications provided in the manufacturer's datasheet. The circuit configuration used in this implementation is documented in the accompanying figures (see Circuit Diagrams section).
 
 # Updates compared to the main library
+
 This section provides a summary of the modifications made to the main library.
 
 **Serial output flexibility**
+
 The driver has been modified to provide enhanced flexibility for serial communication output. A configurable serial port selection mechanism has been implemented in the CHx01_dev class to support different hardware platforms.
 Within the CHx01_dev(void) constructor, the following preprocessor conditional has been added to enable platform-specific serial port assignment:
 
@@ -21,6 +23,7 @@ Within the CHx01_dev(void) constructor, the following preprocessor conditional h
   #endif
 ```
 Steps to add a new microcontroller and Serial output:
+
 1- Identify the preprocessor definition for your target microcontroller
 
 2- Determine the appropriate serial port instance (e.g., Serial, Serial1, Serial2, etc.)
@@ -31,6 +34,7 @@ Steps to add a new microcontroller and Serial output:
 
 
 **Set the direction of the INT pin level shifter**
+
 The sensor datasheet explicitly requires a bidirectional level shifter for the INT pin. This hardware component is essential because the INT pin operates in two distinct modes:
 
 1- Initialization Mode: The microcontroller drives the INT pin (OUTPUT direction)
@@ -53,6 +57,7 @@ To ensure correct bidirectional operation, the following direction definitions h
 ```
 
 **Added example**
+
 I have added an example to the example folder. The example uses an STM32F407 to communicate with a CH101. 
 
 # Software setup
