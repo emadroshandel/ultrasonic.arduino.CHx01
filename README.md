@@ -1,54 +1,60 @@
-![TDKInvensense](doc/pictures/TDKInvensense.jpg)
 
 # CHx01 Arduino library
-This arduino library for the [TDK/Invensense CHx01 Time-of-Flight sensors](https://invensense.tdk.com/smartsonic/).
-The CHx01 devices are miniature, ultra-low power, long-range ultrasonic Time-of-Flight (ToF) range sensor.
+This Arduino library for the [TDK/Invensense CHx01 Time-of-Flight sensors](https://invensense.tdk.com/smartsonic/).
+The CHx01 devices are miniature, ultra-low power, long-range ultrasonic Time-of-Flight (ToF) range sensors.
 This library supports CH101 and CH201 devices.
 
+This library operates correctly when the hardware circuit is implemented according to the specifications provided in the manufacturer's datasheet. The circuit configuration used in this implementation is documented in the accompanying figures (see Circuit Diagrams section).\
+
+# Updates compared to the main library
+This section provides a summary of the modifications made to the main library.
+
+**Serial output flexibility**
+The driver has been modified to provide enhanced flexibility for serial communication output. A configurable serial port selection mechanism has been implemented in the CHx01_dev class to support different hardware platforms.
+Within the CHx01_dev(void) constructor, the following preprocessor conditional has been added to enable platform-specific serial port assignment:
+
+```C++
+  #if defined(STM32F407xx) || defined(STM32F407)
+    outputSerial = &Serial3;
+  #else
+    outputSerial = &Serial;
+  #endif
+```
+Steps to add a new microcontroller and Serial output:
+1- Identify the preprocessor definition for your target microcontroller
+2- Determine the appropriate serial port instance (e.g., Serial, Serial1, Serial2, etc.)
+3- Add the platform condition to the preprocessor block in both constructors
+4- Recompile the library for your target platform
+
+**Set the direction of the INT pin level shifter**
+The sensor datasheet explicitly requires a bidirectional level shifter for the INT pin. This hardware component is essential because the INT pin operates in two distinct modes:
+1- Initialization Mode: The microcontroller drives the INT pin (OUTPUT direction)
+2- Application Mode: The sensor drives the INT pin to send interrupt signals (INPUT direction)
+The SN74LVC2T45 is the bidirectional level shifter that I have used in the test system. It provides the necessary direction control for proper INT pin operation.
+
+DIR Pin State Data Flow Direction Mode:
+LOW (0) Microcontroller → Sensor Initialization (MCU controls INT)
+HIGH (1) Sensor → Microcontroller Application (Sensor sends interrupts)
+
+To ensure correct bidirectional operation, the following direction definitions have been implemented in CHx01_dev.h:
+
+```C++
+#define CHX01_INT_DIR_OUT (0)
+#define CHX01_INT_DIR_IN  (1)
+```
+
+**Added example**
+I have added an example to the example folder. The example uses an STM32F407 to communicate with a CH101. 
+
 # Software setup
-Use Arduino Library manager to find and install the CHx01 library.
+Download this repository and add it to the Arduino libraries available in your .../Documents\Arduino folder of your computer. 
 
-# Hardware setup
-There is currently no Arduino shield for the CHx01 sensors.  
-The wiring must be done manually between the Arduino motherboard and the Ultrasonic ToF EVK board (which is part of the [TDK Design Kit DK-x0201](https://invensense.tdk.com/products/dk-x0201/)).  
-The below wiring description is given for an Arduino Zero board:
+# Circuit Diagram 
 
-|Arduino Zero|Ultrasonic ToF EVK board|
-| --- | --- |
-| 3V3           | J10.1          |
-| 5V            | J10.19         |
-| GND           | J7.3           |
-| SDA           | J6.21          |
-| SCK           | J6.19          |
-| INT1_0=DIG.2  | J7.16          |
-| INT_DIR=DIG.8 | J7.26          |
-| RST=DIG.9     | J7.10          |
-| PROG0=DIG.10  | J7.28          |
-
-On Ultrasonic ToF EVK, connect EN_1v8 to 3v3
-
-|3v3|EN_1v8|
-| --- | --- |
-| J1.7 | J1.14 |
 
 <img src="./doc/pictures/US_ToF_EVK_wiring.jpg" alt="Ultrasonic ToF EVK wiring" width="500"/>
 
-The CHx01 sensor module must be connected with a flex to the J11 connector (Device 0 port).
 
-**Note:** On CHx01 sensor, the interrupt is a 1v8 bidirectional signal going through a level shifter (present on Ultrasonic ToF EVK board) as Arduino IOs are 3v3.
-The INT_DIR signal controls the direction of the interrupt throught the level shifter.
-If no level shifter is required in your design (or when using a level shifter not having a direction pin), INT_DIR can be left unconnected.
-
-## Adding a second sensor
-
-This library includes triangulation sketches requiring 2 CHx01 sensors.
-The second CHx01 sensor module must be connected with a flex to the J13 connector (Device 1 port).  
-Other additional signals are required:
-
-|Arduino Zero|Ultrasonic ToF EVK board|
-| --- | --- |
-| INT1_1=DIG.3  | J7.18          |
-| PROG1=DIG.11  | J7.30          |
 
 # Library API
 
@@ -58,8 +64,8 @@ Other additional signals are required:
 
 Create an instance of the CH101 that will be accessed using the specified I2C. The IO numbers to be used as interrupt, interrupt direction,
 reset and program must be specified.  
-Reset pin is active LOW by default, set rst_n to false to make it active HIGH (required for the Ultrasonic ToF EVK board).
-If int_dir pin is not used, it can be  set to UNUSED_PIN.
+Reset pin is active LOW by default; set rst_n to false to make it active HIGH (required for the Ultrasonic ToF EVK board).
+If the int_dir pin is not used, it can be  set to UNUSED_PIN.
 
 ```C++
 CH101 CHx01(Wire,2,8,9,10,false);
