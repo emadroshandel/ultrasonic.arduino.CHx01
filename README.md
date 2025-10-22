@@ -72,10 +72,13 @@ I have added an example to the example folder. The example uses an STM32F407 to 
 Download this repository and add it to the Arduino libraries available in your .../Documents\Arduino folder of your computer. 
 
 # Circuit Diagram 
+The figures below show the use of discrete level-shifting components: a MOSFET-based circuit for the reset pin, a PCA9306D for I²C voltage translation, and an SN74LVC2T45 for INT pin logic control. A basic resistor divider is also employed to generate the 1.8 V logic level for the CH101’s PROG pin. 
 
+<img src="./doc/pictures/resetpinlevelshifter.png" alt="Ultrasonic ToF EVK wiring" width="500"/>
 
 <img src="./doc/pictures/intPinLevelShifter.png" alt="Ultrasonic ToF EVK wiring" width="500"/>
 
+<img src="./doc/pictures/i2clevelShifter.png" alt="Ultrasonic ToF EVK wiring" width="500"/>
 
 
 # Library API
