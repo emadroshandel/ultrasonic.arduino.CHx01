@@ -2,7 +2,30 @@
 #include "invn/soniclib/ch_rangefinder.h"
 #include "invn/soniclib/sensor_fw/ch101/ch101_gpr.h"
 
+CHx01_dev::CHx01_dev(void) {
+  #if defined(STM32F407xx) || defined(STM32F407)
+    outputSerial = &Serial3;
+  #else
+    outputSerial = &Serial;
+  #endif
+  
+  i2c = NULL;
+  i2c_address = 0;
+  int1_pin_id = UNUSED_PIN;
+  int_dir_pin_id = UNUSED_PIN;
+  prog_pin_id = UNUSED_PIN;
+  fw_init_func = NULL;
+  int1_attached = false;
+  is_measure_ready = false;
+}
+
 CHx01_dev::CHx01_dev(TwoWire& i2c_ref, uint8_t i2c_addr, int int1_id, int int_dir_id, int prog_id) {
+  #if defined(STM32F407xx) || defined(STM32F407)
+    outputSerial = &Serial3;
+  #else
+    outputSerial = &Serial;
+  #endif
+  
   i2c = &i2c_ref;
   i2c_address = i2c_addr;
   int1_pin_id = int1_id;
@@ -12,20 +35,6 @@ CHx01_dev::CHx01_dev(TwoWire& i2c_ref, uint8_t i2c_addr, int int1_id, int int_di
   int1_attached = false;
   is_measure_ready = false;
 }
-
-
-CHx01_dev::CHx01_dev(void) {
-  i2c = NULL;
-  i2c_address = 0;
-  int1_pin_id = UNUSED_PIN;
-  int_dir_pin_id = UNUSED_PIN;
-  prog_pin_id = UNUSED_PIN;
-  fw_init_func = NULL;
-  int1_attached = false;
-  is_measure_ready = false;
-  //memset(this, 0, sizeof(ch_dev_t));
-}
-
 
 int CHx01_dev::begin(ch_group_t* group_ptr, int id)
 {
@@ -56,19 +65,20 @@ int CHx01_dev::begin(ch_group_t* group_ptr, int id)
 
 uint16_t CHx01_dev::get_max_samples(void) {
   return ch_get_max_samples(this);
-};
+}
 
 uint16_t CHx01_dev::get_max_range(void) {
   return ch_samples_to_mm(this, ch_get_max_samples(this));
-};
+}
 
 uint16_t CHx01_dev::get_measure_range(void) {
   uint16_t nb_samples = ch_get_num_samples(this);
   return ch_samples_to_mm(this, nb_samples);
-};
+}
 
-
-int CHx01_dev::free_run(void) { return free_run(get_max_range()); }
+int CHx01_dev::free_run(void) { 
+  return free_run(get_max_range()); 
+}
 
 int CHx01_dev::free_run(uint16_t range_mm) {
   return free_run(range_mm, default_odr_ms);
@@ -128,18 +138,29 @@ void CHx01_dev::trig(void) {
   ch_trigger(this);
 }
 
-bool CHx01_dev::data_ready(void) { return is_measure_ready; }
+bool CHx01_dev::data_ready(void) { 
+  return is_measure_ready; 
+}
 
-void CHx01_dev::set_data_ready(void) { is_measure_ready = true; }
-void CHx01_dev::clear_data_ready(void) { is_measure_ready = false; }
+void CHx01_dev::set_data_ready(void) { 
+  is_measure_ready = true; 
+}
+
+void CHx01_dev::clear_data_ready(void) { 
+  is_measure_ready = false; 
+}
 
 uint16_t CHx01_dev::part_number(void) {
   return ch_get_part_number(this);
 }
 
-uint32_t CHx01_dev::frequency(void) { return ch_get_frequency(this); }
+uint32_t CHx01_dev::frequency(void) { 
+  return ch_get_frequency(this); 
+}
 
-uint16_t CHx01_dev::bandwidth(void) { return ch_get_bandwidth(this); }
+uint16_t CHx01_dev::bandwidth(void) { 
+  return ch_get_bandwidth(this); 
+}
 
 uint16_t CHx01_dev::rtc_cal(void) {
   return ch_get_rtc_cal_result(this);
@@ -152,36 +173,37 @@ uint16_t CHx01_dev::rtc_cal_pulse_length(void) {
 float CHx01_dev::cpu_freq(void) {
   return ch_get_cpu_frequency(this) / 1000000.0f;
 }
+
 const char *CHx01_dev::fw_version(void) {
   return ch_get_fw_version_string(this);
 }
 
 void CHx01_dev::print_informations(void) {
-  Serial.println("Sensor informations");
-  Serial.print("    Type: ");
-  Serial.println(part_number());
-  Serial.print("    Operating Frequency (Hz): ");
-  Serial.println(frequency());
-  Serial.print("    Bandwidth (Hz): ");
-  Serial.println(bandwidth());
-  Serial.print("    RTC Cal (lsb @ ms): ");
-  Serial.print(rtc_cal());
-  Serial.print("@");
-  Serial.println(rtc_cal_pulse_length());
-  Serial.print("    CPU Freq (MHz): ");
-  Serial.println(cpu_freq());
-  Serial.print("    max range (mm): ");
-  Serial.println(get_max_range());
-  Serial.print("    Firmware: ");
-  Serial.println(fw_version());
-  Serial.print("    Nb samples: ");
-  Serial.println(ch_get_max_samples(this));
+  outputSerial->println("Sensor informations");
+  outputSerial->print("    Type: ");
+  outputSerial->println(part_number());
+  outputSerial->print("    Operating Frequency (Hz): ");
+  outputSerial->println(frequency());
+  outputSerial->print("    Bandwidth (Hz): ");
+  outputSerial->println(bandwidth());
+  outputSerial->print("    RTC Cal (lsb @ ms): ");
+  outputSerial->print(rtc_cal());
+  outputSerial->print("@");
+  outputSerial->println(rtc_cal_pulse_length());
+  outputSerial->print("    CPU Freq (MHz): ");
+  outputSerial->println(cpu_freq());
+  outputSerial->print("    max range (mm): ");
+  outputSerial->println(get_max_range());
+  outputSerial->print("    Firmware: ");
+  outputSerial->println(fw_version());
+  outputSerial->print("    Nb samples: ");
+  outputSerial->println(ch_get_max_samples(this));
 }
 
 void CHx01_dev::print_configuration(void) {
-  Serial.println("Sensor configuration");
-  Serial.print("    measure range (mm): ");
-  Serial.println(get_measure_range());
+  outputSerial->println("Sensor configuration");
+  outputSerial->print("    measure range (mm): ");
+  outputSerial->println(get_measure_range());
 }
 
 float CHx01_dev::get_range(void) {
@@ -210,10 +232,8 @@ void CHx01_dev::i2c_reset(void)
 
 void CHx01_dev::set_int1_dir(bool value)
 {
-
   if(value == CHX01_INT_DIR_IN)
   {
-
     if(int_dir_pin_id != UNUSED_PIN)
     {
       digitalWrite(int_dir_pin_id, CHX01_INT_DIR_IN);
@@ -242,7 +262,6 @@ void CHx01_dev::enableInterrupt(chx01_dev_irq_handler handler)
 {
   if (!int1_attached) {
     set_int1_dir(CHX01_INT_DIR_IN);
-
     attachInterrupt(digitalPinToInterrupt(int1_pin_id),handler,FALLING);
     int1_attached = true;
   }
@@ -265,4 +284,3 @@ TwoWire* CHx01_dev::get_i2c(void)
 {
   return i2c;
 }
-
